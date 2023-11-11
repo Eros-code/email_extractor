@@ -1,0 +1,12 @@
+.env
+db
+dist
+.DS_Store
+**/*.DS_Store
+tmp
+bin
+lib
+lib_managed
+log
+logs
+.cache
