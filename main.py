@@ -19,6 +19,15 @@ password = os.getenv('PASSWORD')
 # for office 365, it's this:
 imap_server = "outlook.office365.com"
 
+matches = ["ACTION:", 
+                   "EMAIL:",
+                   "DASHBOARD_NAME(S):",
+                   "TEAM:",
+                   "SC END DATE:",
+                   "SC STATUS:",
+                   "AUDIT SOURCE:",
+                   "USER_TO_COPY_EMAIL:"]
+
 def clean(text):
     # clean text for creating a folder
     return "".join(c if c.isalnum() else "_" for c in text)
@@ -85,14 +94,6 @@ def retrieveEmailMessages(messages, N):
     return emailList
 
 def templateChecker(retrievedEmail):
-    matches = ["ACTION:", 
-                   "EMAIL:",
-                   "DASHBOARD_NAME(S):",
-                   "TEAM:",
-                   "SC END DATE:",
-                   "SC STATUS:",
-                   "AUDIT SOURCE:",
-                   "USER_TO_COPY_EMAIL:"]
     if all(variable in retrievedEmail['body'] for variable in matches):
         return retrievedEmail['body']
     else:
@@ -121,30 +122,20 @@ if __name__=='__main__':
         retrievedEmail = retrieveEmailMessages(messages, N)[0]
         emailOutput = templateChecker(retrievedEmail)
         if emailOutput != 'template not detected':
-            ActionIndex = emailOutput.find('ACTION:')+7
-            EmailIndex = emailOutput.find('EMAIL:')+6
-            DashboardIndex = emailOutput.find('DASHBOARD_NAME(S):') + 18
-            TeamIndex = emailOutput.find('TEAM:') + 5
-            ScEndIndex = emailOutput.find('SC END DATE:') + 12
-            ScStatusIndex = emailOutput.find('SC STATUS:') + 10
-            AuditSourceIndex = emailOutput.find('AUDIT SOURCE:') + 13
-            UserCopyIndex = emailOutput.find('USER_TO_COPY_EMAIL:') + 19
-            
             variablesDict = {}
-            variablesDict['ACTION'] = emailOutput[ActionIndex:EmailIndex-6]
-            variablesDict['EMAIL'] = emailOutput[EmailIndex:DashboardIndex-18]
-            variablesDict['DASHBOARD_NAME(S)'] = emailOutput[DashboardIndex:TeamIndex-5]
-            variablesDict['TEAM'] = emailOutput[TeamIndex:ScEndIndex-12]
-            variablesDict['SC_END_DATE'] = emailOutput[ScEndIndex:ScStatusIndex-10]
-            variablesDict['SC_STATUS'] = emailOutput[ScStatusIndex:AuditSourceIndex-13]
-            variablesDict['AUDIT_SOURCE'] = emailOutput[AuditSourceIndex:UserCopyIndex-19]
-            percentIndex = emailOutput[UserCopyIndex:].index('%')
-            UserCopy = emailOutput[UserCopyIndex:]
-            variablesDict['USER_TO_COPY_EMAIL'] = UserCopy[:percentIndex]
-
-            for i in variablesDict.keys():
-                variablesDict[i] = variablesDict[i].replace("\r\n", " ")
-                variablesDict[i] = variablesDict[i].strip()
+            for i in range(len(matches)-1):
+                matchIndex = emailOutput.find(matches[i])+len(matches[i])
+                matchIndexAfter = emailOutput.find(matches[i+1])
+                variablesDict[matches[i][:-1]] = emailOutput[matchIndex:matchIndexAfter]
+                variablesDict[matches[i][:-1]] = variablesDict[matches[i][:-1]].replace("\r\n", " ")
+                variablesDict[matches[i][:-1]] = variablesDict[matches[i][:-1]].strip()
+            
+            matchIndex = emailOutput.find(matches[-1])+len(matches[-1])
+            matchIndexAfter = emailOutput[matchIndex:].index('%')
+            UserCopy = emailOutput[matchIndex:]
+            variablesDict[matches[-1][:-1]] = UserCopy[:matchIndexAfter]
+            variablesDict[matches[-1][:-1]] = variablesDict[matches[-1][:-1]].replace("\r\n", " ")
+            variablesDict[matches[-1][:-1]] = variablesDict[matches[-1][:-1]].strip()
 
 
             print(variablesDict)
