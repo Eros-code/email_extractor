@@ -28,13 +28,12 @@ def read_yaml_from_github(access_token):
 
 # Read YAML content from the private GitHub repository
 yaml_data = read_yaml_from_github(access_token)
-audit_source = 'income-tax-subscription-eligibility;submit-vat-return-frontend;import-control-entry-declaration-outcome'
+audit_source = 'income-tax-subscription-eligibility;submit-vat-return-frontend;import-control-entry-declaration-outcome;fake-audit-source'
 
 def find_data_domains(yaml_data, audit_source):
 
     if yaml_data:
-        print("YAML content:")
-        print(yaml_data)
+        print({"Response":"Successfully obtained yaml data from repo"})
 
     audit_source_list = audit_source.split(';')
     data_domain_list = []
@@ -45,8 +44,14 @@ def find_data_domains(yaml_data, audit_source):
 
                 data_domain_list.append(key)
                 print(f'{key}: {audit_sources}')
-
-    print(set(data_domain_list))
+            # else:
+            #     data_domain_list.append(f'{audit_sources} not found')
 
     return set(data_domain_list)
+
+if __name__=='__main__':
+    yaml_data2 = read_yaml_from_github(access_token)
+    data_doms = find_data_domains(yaml_data2, audit_source)
+    print(data_doms)
+
 

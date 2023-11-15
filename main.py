@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import re
 from ticket_creator import connect_to_jira, list_all_issues, create_new_issue
+from read_data_domains import read_yaml_from_github, find_data_domains
 
 # import jira library after doing pip install jira
 from jira.client import JIRA
@@ -25,6 +26,7 @@ password = os.getenv('PASSWORD')
 api_token = os.getenv('JIRA_API')
 jiraServer = os.getenv('JIRA_SERVER')
 jiraEmail = os.getenv('JIRA_EMAIL')
+access_token = os.getenv('access_token')
 
 # use your email provider's IMAP server, you can look for your provider's IMAP server on Google
 # or check this page: https://www.systoolsgroup.com/imap/
@@ -154,6 +156,14 @@ if __name__=='__main__':
     retrievedEmail = retrieveEmailMessages(messages, N)[0]
     emailOutput = templateChecker(retrievedEmail, matches)
     variables = templateVariableSeparator(emailOutput)
+    yaml_data = read_yaml_from_github(access_token)
+    new_data_domains = find_data_domains(yaml_data, variables['AUDIT SOURCE'])
+
+    new_audit_source_value = ';'.join(list(new_data_domains))
+
+    variables['AUDIT SOURCE'] = new_audit_source_value
+
+    print(variables)
 
     jiraOptions = {'server': jiraServer}
     projectName = 'TK'
@@ -163,12 +173,12 @@ if __name__=='__main__':
         ticket_summary += f"{key}: {value}\n"
 
     jira = connect_to_jira(jiraOptions, jiraEmail, api_token)
-    # create_new_issue(jira, projectName, 'onboarding 7', ticket_summary)
+    # create_new_issue(jira, projectName, 'onboarding 10', ticket_summary)
     # print(list_all_issues(jira, projectName))
     
     # #Get one story and print out some stuff to show it worked
-    issue = jira.issue(id='TK-8')
-    print(issue.fields.description)
+    # issue = jira.issue(id='TK-8')
+    # print(issue.fields.description)
 
         
     # except:
