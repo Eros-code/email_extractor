@@ -28,25 +28,40 @@ def read_yaml_from_github(access_token):
 
 # Read YAML content from the private GitHub repository
 yaml_data = read_yaml_from_github(access_token)
-audit_source = 'income-tax-subscription-eligibility;submit-vat-return-frontend;import-control-entry-declaration-outcome'
+audit_source = 'income-tax-subscription-eligibility;submit-vat-return-frontend;import-control-entry-declaration-outcome;fake-audit-source'
 
 def find_data_domains(yaml_data, audit_source):
 
     if yaml_data:
-        print("YAML content:")
-        print(yaml_data)
+        print({"Response":"Successfully obtained yaml data from repo"})
 
     audit_source_list = audit_source.split(';')
     data_domain_list = []
-
+    found_audit_sources = []
+    
     for key, values in yaml_data.items():
         for audit_sources in audit_source_list:
             if audit_sources in values:
 
                 data_domain_list.append(key)
+                found_audit_sources.append(audit_sources)
                 print(f'{key}: {audit_sources}')
 
-    print(set(data_domain_list))
+            # else:
+            #     data_domain_list.append(f'{audit_sources} not found')
 
-    return set(data_domain_list)
+    missing = list(sorted(set(audit_source_list) - set(found_audit_sources)))
+    if missing != []:
+        missing_audit_sources = [f'missing audit sources: {missing}']
+        data_domains = list(set(data_domain_list)) + missing_audit_sources
+    else:
+        data_domains = list(set(data_domain_list))
+    
+    return data_domains
+
+if __name__=='__main__':
+    yaml_data2 = read_yaml_from_github(access_token)
+    data_doms = find_data_domains(yaml_data2, audit_source)
+    print(data_doms)
+
 
