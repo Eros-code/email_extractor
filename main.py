@@ -173,7 +173,7 @@ if __name__=='__main__':
         ticket_summary += f"{key}: {value}\n"
 
     jira = connect_to_jira(jiraOptions, jiraEmail, api_token)
-    # create_new_issue(jira, projectName, 'onboarding 10', ticket_summary)
+    # create_new_issue(jira, projectName, 'onboarding 20', ticket_summary)
     # print(list_all_issues(jira, projectName))
     
     # #Get one story and print out some stuff to show it worked
