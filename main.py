@@ -7,6 +7,7 @@ import webbrowser
 import os
 from dotenv import load_dotenv
 import re
+from ticket_creator import connect_to_jira, list_all_issues, create_new_issue
 
 # import jira library after doing pip install jira
 from jira.client import JIRA
@@ -21,9 +22,9 @@ load_dotenv()
 # account credentials
 username = os.getenv('USERNAME')
 password = os.getenv('PASSWORD')
-api_token = os.getenv('JIRA-API')
-jiraServer = os.getenv('JIRA-SERVER')
-jiraEmail = os.getenv('JIRA-EMAIL')
+api_token = os.getenv('JIRA_API')
+jiraServer = os.getenv('JIRA_SERVER')
+jiraEmail = os.getenv('JIRA_EMAIL')
 
 # use your email provider's IMAP server, you can look for your provider's IMAP server on Google
 # or check this page: https://www.systoolsgroup.com/imap/
@@ -37,7 +38,7 @@ matches = ["ACTION:",
                    "SC END DATE:",
                    "SC STATUS:",
                    "AUDIT SOURCE:",
-                   "USER_TO_COPY_EMAIL:"]
+                   "USER TO COPY EMAIL:"]
 
 def clean(text):
     # clean text for creating a folder
@@ -104,7 +105,7 @@ def retrieveEmailMessages(messages, N):
 
     return emailList
 
-def templateChecker(retrievedEmail):
+def templateChecker(retrievedEmail, variable):
     if all(variable in retrievedEmail['body'] for variable in matches):
         return retrievedEmail['body']
     else:
@@ -129,48 +130,6 @@ def templateVariableSeparator(emailOutput):
         return variablesDict
     else:
          return {'Response': emailOutput}
-    
-def jiraBoardConnector():
-    # Construct a Client-instance that will request your required data from the Jira server. This will require the Server name (to which the client will send its data request) given by your Domain name. 
-    try:
-        jiraOptions = {'server': jiraServer}
-        jira = JIRA(options=jiraOptions, basic_auth=(f"{jiraEmail}", f"{api_token}"))
-        print ({'Response': 'successfully connected to jira account'})
-        return jira
-    except:
-        print ({'Response': 'could not connect to jira account'})
-
-# This code sample uses the 'requests' library:
-# http://docs.python-requests.org
-import requests
-from requests.auth import HTTPBasicAuth
-import json
- 
-def JiraBoard():
-    url = jiraServer + '/rest/api/3/search'
-    
-    auth = HTTPBasicAuth(jiraEmail, api_token)
-    
-    headers = {
-        "Accept": "application/json"
-    }
-    
-    query = {
-        'jql': 'key = TK-1'
-    }
-    
-    response = requests.request(
-        "GET",
-        url,
-        headers=headers,
-        params=query,
-        auth=auth
-    )
-    
-    data = json.loads(response.text)
-    selectedIssues=[]
-    #Get all issues and put them into an array
-    print(data)
 
 
 # We've imported the necessary modules and then specified the credentials of our email account. 
@@ -193,17 +152,23 @@ if __name__=='__main__':
     messages = int(messages[0])
     # We've used the imap.select() method, which selects a mailbox (Inbox, spam, etc.), we've chosen the INBOX folder. You can use the imap.list() method to see the available mailboxes.
     retrievedEmail = retrieveEmailMessages(messages, N)[0]
-    emailOutput = templateChecker(retrievedEmail)
+    emailOutput = templateChecker(retrievedEmail, matches)
     variables = templateVariableSeparator(emailOutput)
 
-    print(variables)
+    jiraOptions = {'server': jiraServer}
+    projectName = 'TK'
+    ticket_summary = ""
 
-    # jira = jiraBoardConnector()
+    for key, value in variables.items():
+        ticket_summary += f"{key}: {value}\n"
+
+    jira = connect_to_jira(jiraOptions, jiraEmail, api_token)
+    # create_new_issue(jira, projectName, 'onboarding 7', ticket_summary)
+    # print(list_all_issues(jira, projectName))
     
     # #Get one story and print out some stuff to show it worked
-    # issue = jira.issue(id='TK-1')
-
-    JiraBoard()
+    issue = jira.issue(id='TK-8')
+    print(issue.fields.description)
 
         
     # except:

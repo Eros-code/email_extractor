@@ -10,3 +10,8 @@ lib_managed
 log
 logs
 .cache
+__pycache__
+credentials.json
+token.pickle
+token_write.pickle
+credentials_new.json
