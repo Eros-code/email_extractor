@@ -52,10 +52,9 @@ def find_data_domains(yaml_data, audit_source):
 
     missing = list(sorted(set(audit_source_list) - set(found_audit_sources)))
     missing_audit_sources = [f'missing audit sources: {missing}']
-    print(missing_audit_sources)
     data_domains = list(set(data_domain_list)) + missing_audit_sources
-    print(data_domains)
-    return set(data_domains)
+    
+    return data_domains
 
 if __name__=='__main__':
     yaml_data2 = read_yaml_from_github(access_token)
