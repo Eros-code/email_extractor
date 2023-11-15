@@ -37,17 +37,25 @@ def find_data_domains(yaml_data, audit_source):
 
     audit_source_list = audit_source.split(';')
     data_domain_list = []
-
+    found_audit_sources = []
+    
     for key, values in yaml_data.items():
         for audit_sources in audit_source_list:
             if audit_sources in values:
 
                 data_domain_list.append(key)
+                found_audit_sources.append(audit_sources)
                 print(f'{key}: {audit_sources}')
+
             # else:
             #     data_domain_list.append(f'{audit_sources} not found')
 
-    return set(data_domain_list)
+    missing = list(sorted(set(audit_source_list) - set(found_audit_sources)))
+    missing_audit_sources = [f'missing audit sources: {missing}']
+    print(missing_audit_sources)
+    data_domains = list(set(data_domain_list)) + missing_audit_sources
+    print(data_domains)
+    return set(data_domains)
 
 if __name__=='__main__':
     yaml_data2 = read_yaml_from_github(access_token)
