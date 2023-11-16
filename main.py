@@ -39,7 +39,8 @@ matches = ["ACTION:",
                    "TEAM:",
                    "SC END DATE:",
                    "SC STATUS:",
-                   "AUDIT SOURCE:",
+                   "AUDIT SOURCE(S):",
+                   "SERVICE(S):",
                    "USER TO COPY EMAIL:"]
 
 def clean(text):
@@ -154,26 +155,48 @@ if __name__=='__main__':
     messages = int(messages[0])
     # We've used the imap.select() method, which selects a mailbox (Inbox, spam, etc.), we've chosen the INBOX folder. You can use the imap.list() method to see the available mailboxes.
     retrievedEmail = retrieveEmailMessages(messages, N)[0]
+    print(retrievedEmail)
     emailOutput = templateChecker(retrievedEmail, matches)
+    
     variables = templateVariableSeparator(emailOutput)
     yaml_data = read_yaml_from_github(access_token)
-    new_data_domains = find_data_domains(yaml_data, variables['AUDIT SOURCE'])
+    try:
+        new_data_domains, missing_audit_sources = find_data_domains(yaml_data, variables['AUDIT SOURCE(S)'])
+        
+        # if the service the user has entered doesnt correspond
+        # to captured data domains then exclude from final list
 
-    new_audit_source_value = ';'.join(list(new_data_domains))
+        services = variables['SERVICE(S)'].split(';')
+        data_domain_checker = []
+        for domain in new_data_domains:
+            if any(service in domain for service in services):
+                data_domain_checker.append(domain)
 
-    variables['AUDIT SOURCE'] = new_audit_source_value
+        new_audit_source_value = ';'.join(data_domain_checker)
 
-    print(variables)
+        variables['AUDIT SOURCE(S)'] = new_audit_source_value
+        variables['MISSING AUDIT SOURCE(S)'] = missing_audit_sources
 
-    jiraOptions = {'server': jiraServer}
-    projectName = 'TK'
-    ticket_summary = ""
+        print(variables)
 
-    for key, value in variables.items():
-        ticket_summary += f"{key}: {value}\n"
+        jiraOptions = {'server': jiraServer}
+        projectName = 'TK'
+        ticket_summary = ""
 
-    jira = connect_to_jira(jiraOptions, jiraEmail, api_token)
-    # create_new_issue(jira, projectName, 'onboarding 20', ticket_summary)
+
+        for key, value in retrievedEmail.items():
+            if key != 'body':
+                ticket_summary += f"{key}: {value}\n"
+        ticket_summary += '\n'
+
+        for key, value in variables.items():
+            ticket_summary += f"{key}: {value}\n"
+
+        jira = connect_to_jira(jiraOptions, jiraEmail, api_token)
+    except:
+        print(emailOutput)
+
+    # create_new_issue(jira, projectName, 'onboarding 21', ticket_summary)
     # print(list_all_issues(jira, projectName))
     
     # #Get one story and print out some stuff to show it worked
