@@ -35,6 +35,9 @@ def find_data_domains(yaml_data, audit_source):
     if yaml_data:
         print({"Response":"Successfully obtained yaml data from repo"})
 
+    audit_source = audit_source.lower()
+    audit_source = audit_source.replace('_', '-')
+
     audit_source_list = audit_source.split(';')
     data_domain_list = []
     found_audit_sources = []
@@ -51,13 +54,9 @@ def find_data_domains(yaml_data, audit_source):
             #     data_domain_list.append(f'{audit_sources} not found')
 
     missing = list(sorted(set(audit_source_list) - set(found_audit_sources)))
-    if missing != []:
-        missing_audit_sources = [f'missing audit sources: {missing}']
-        data_domains = list(set(data_domain_list)) + missing_audit_sources
-    else:
-        data_domains = list(set(data_domain_list))
+    data_domains = list(set(data_domain_list))
     
-    return data_domains
+    return data_domains, missing
 
 if __name__=='__main__':
     yaml_data2 = read_yaml_from_github(access_token)
