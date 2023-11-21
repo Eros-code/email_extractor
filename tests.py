@@ -35,11 +35,10 @@ class jira_connection(unittest.TestCase):
       
 
 class github_connection(unittest.TestCase):
-    imap_server = "outlook.office365.com"
 
     def test_github_connector(self):
         result = read_yaml_from_github(access_token)
-        
+
         self.assertIsNotNone(result)
        
 
