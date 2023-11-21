@@ -16,9 +16,10 @@ class email_connection(unittest.TestCase):
     imap_server = "outlook.office365.com"
 
     def test_email_connector(self):
-        # create an IMAP4 class with SSL 
+
         imap = imaplib.IMAP4_SSL(imap_server)
         _, response = imap.login(username_test, password_test)
+
         assert response == [b'LOGIN completed.']
 
 
@@ -26,12 +27,21 @@ class jira_connection(unittest.TestCase):
 
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     def test_jira_connector(self, mock_stdout):
-
+        
         connect_to_jira(jiraOptions, jira_email, jira_auth_key)   # Call function.
-
+        
         successful_response = "{'Response': 'connected to jira board successfully'}\n"
         self.assertEqual(successful_response, mock_stdout.getvalue())
 
 
+class github_connection(unittest.TestCase):
+    imap_server = "outlook.office365.com"
+
+    def test_github_connector(self):
+        print(1)
+       
+
+
+
 if __name__ == "__main__":
-    unittest.main(verbosity=2, exit=False, failfast=True, buffer=True)
+    unittest.main(verbosity=2, exit=False, failfast=False, buffer=True)
