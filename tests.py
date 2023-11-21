@@ -10,7 +10,7 @@ jira_auth_key = os.getenv('JIRA_AUTH_KEY') #Jira api key
 jira_email = os.getenv('JIRA_EMAIL') #email used for Jira account
 jira_server = os.getenv('JIRA_SERVER') # Jira board URL, looks like ______.atlassian.net
 jiraOptions = {'server': jira_server } 
-
+access_token = os.getenv('access_token')
 
 class email_connection(unittest.TestCase):
     imap_server = "outlook.office365.com"
@@ -32,13 +32,15 @@ class jira_connection(unittest.TestCase):
         
         successful_response = "{'Response': 'connected to jira board successfully'}\n"
         self.assertEqual(successful_response, mock_stdout.getvalue())
-
+      
 
 class github_connection(unittest.TestCase):
     imap_server = "outlook.office365.com"
 
     def test_github_connector(self):
-        print(1)
+        result = read_yaml_from_github(access_token)
+        
+        self.assertIsNotNone(result)
        
 
 
